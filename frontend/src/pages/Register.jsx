@@ -48,10 +48,12 @@ export default function Register() {
         password: formData.password,
       });
 
-      const { token, user } = response.data;
+      console.log(response);
+      
+      const { token, user } = response;
       login(user, token);
       setSuccess("Account created! Redirecting...");
-      setTimeout(() => navigate("/dashboard"), 1500);
+       navigate("/dashboard")
     } catch (err) {
       setError(err.response?.data?.message || "Registration failed. Please try again.");
     } finally {

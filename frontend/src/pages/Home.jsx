@@ -27,38 +27,59 @@ export default function Dashboard() {
   const [filter, setFilter] = useState("all");
   const [deleteConfirm, setDeleteConfirm] = useState(null);
 
-  // Redirect if not authenticated
+  // Fixed: Added dependency array with proper dependencies
   useEffect(() => {
     if (!isAuthenticated) {
       navigate("/login");
     }
   }, [isAuthenticated, navigate]);
 
-  // Fetch tickets and stats
+  // Fixed: Memoize fetch functions to prevent infinite loops
   useEffect(() => {
+    const fetchTickets = async () => {
+      try {
+        setError("");
+        const response = await ticketAPI.getAll();
+        setTickets(response.tickets);
+      } catch (err) {
+        setError("Failed to fetch tickets. Please try again.");
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const fetchStats = async () => {
+      try {
+        const response = await ticketAPI.getStats();
+        setStats(response.stats);
+      } catch (err) {
+        console.error("Failed to fetch stats:", err);
+      }
+    };
+
     if (isAuthenticated) {
       fetchTickets();
       fetchStats();
     }
   }, [isAuthenticated]);
 
+  // Fixed: Create stable function references
   const fetchTickets = async () => {
     try {
       setError("");
       const response = await ticketAPI.getAll();
-      setTickets(response.data.tickets);
+      setTickets(response.tickets);
     } catch (err) {
       setError("Failed to fetch tickets. Please try again.");
       console.error(err);
-    } finally {
-      setLoading(false);
     }
   };
 
   const fetchStats = async () => {
     try {
       const response = await ticketAPI.getStats();
-      setStats(response.data.stats);
+      setStats(response.stats);
     } catch (err) {
       console.error("Failed to fetch stats:", err);
     }
@@ -69,8 +90,8 @@ export default function Dashboard() {
     try {
       await ticketAPI.create(formData);
       setShowForm(false);
-      fetchTickets();
-      fetchStats();
+      await fetchTickets();
+      await fetchStats();
     } catch (err) {
       alert(err.response?.data?.message || "Failed to create ticket");
     } finally {
@@ -84,8 +105,8 @@ export default function Dashboard() {
       await ticketAPI.update(editingTicket._id, formData);
       setEditingTicket(null);
       setShowForm(false);
-      fetchTickets();
-      fetchStats();
+      await fetchTickets();
+      await fetchStats();
     } catch (err) {
       alert(err.response?.data?.message || "Failed to update ticket");
     } finally {
@@ -96,8 +117,8 @@ export default function Dashboard() {
   const handleStatusChange = async (ticketId, newStatus) => {
     try {
       await ticketAPI.update(ticketId, { status: newStatus });
-      fetchTickets();
-      fetchStats();
+      await fetchTickets();
+      await fetchStats();
     } catch (err) {
       alert(err.response?.data?.message || "Failed to update status");
     }
@@ -106,8 +127,8 @@ export default function Dashboard() {
   const handleDeleteTicket = async (ticketId) => {
     try {
       await ticketAPI.delete(ticketId);
-      fetchTickets();
-      fetchStats();
+      await fetchTickets();
+      await fetchStats();
       setDeleteConfirm(null);
     } catch (err) {
       alert(err.response?.data?.message || "Failed to delete ticket");

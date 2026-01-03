@@ -26,31 +26,22 @@ export default function Login() {
     setLoading(true);
     setError("");
 
-    // Validation
-    // if (formData.password !== formData.confirmPassword) {
-    //   setError("Passwords do not match");
-    //   setLoading(false);
-    //   return;
-    // }
-
-    // if (formData.password.length < 6) {
-    //   setError("Password must be at least 6 characters");
-    //   setLoading(false);
-    //   return;
-    // }
-
     try {
       const response = await authAPI.login({
         email: formData.email,
         password: formData.password,
       });
 
-      const { token, user } = response.data;
+      console.log(response);
+
+      const { token, user } = response;
       login(user, token);
       setSuccess("Succesfully Logged In! Redirecting...");
-      setTimeout(() => navigate("/dashboard"), 1500);
+      navigate("/dashboard");
     } catch (err) {
-      setError(err.response?.data?.message || "Registration failed. Please try again.");
+      setError(
+        err.response?.data?.message || "Registration failed. Please try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -59,8 +50,9 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">Create Account</h1>
-        <p className="text-gray-600 mb-6">Join our support ticket management system</p>
+        <h1 className="text-3xl font-bold text-gray-800 mb-2">Login</h1>
+
+        <p className="text-gray-600 mb-6">Access your support dashboard</p>
 
         {error && (
           <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
@@ -77,9 +69,10 @@ export default function Login() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-    
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Email
+            </label>
             <input
               type="email"
               name="email"
@@ -92,7 +85,9 @@ export default function Login() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Password
+            </label>
             <input
               type="password"
               name="password"
@@ -104,19 +99,17 @@ export default function Login() {
             />
           </div>
 
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-semibold py-2 px-4 rounded-lg transition duration-200"
-          >
-            {loading ? "Creating account..." : "Sign Up"}
+          <button type="submit" disabled={loading}>
+            {loading ? "Logging in..." : "Login"}
           </button>
         </form>
 
         <p className="text-center text-gray-600 mt-6">
           Don't have an account?{" "}
-          <Link to="/register" className="text-blue-600 font-semibold hover:text-blue-700">
+          <Link
+            to="/register"
+            className="text-blue-600 font-semibold hover:text-blue-700"
+          >
             Signup
           </Link>
         </p>
