@@ -48,8 +48,6 @@ export default function Register() {
         password: formData.password,
       });
 
-      console.log(response);
-      
       const { token, user } = response;
       login(user, token);
       setSuccess("Account created! Redirecting...");
