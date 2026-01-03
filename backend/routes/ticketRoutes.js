@@ -16,6 +16,7 @@ router.use(authenticate);
 router.post("/", createTicket);
 router.get("/", getUserTickets);
 router.get("/stats", getTicketStats);
+
 router.get("/:id", getTicketById);
 router.put("/:id", updateTicket);
 router.delete("/:id", deleteTicket);
