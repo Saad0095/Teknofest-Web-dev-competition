@@ -1,6 +1,10 @@
+import mongoose from "mongoose";
 import Ticket from "../models/Ticket.js";
 
-// Create a new ticket
+const VALID_STATUSES = ["Open", "In Progress", "Resolved"];
+const VALID_PRIORITIES = ["Low", "Medium", "High"];
+
+// Create new ticket
 export const createTicket = async (req, res) => {
   try {
     const { subject, description, category, priority } = req.body;
@@ -8,13 +12,26 @@ export const createTicket = async (req, res) => {
 
     if (!subject || !description || !category || !priority) {
       return res.status(400).json({
-        message: "Please provide all required fields (subject, description, category, priority)",
+        message: "All fields are required",
       });
     }
 
-    if (subject.trim() === "") {
-      return res.status(400).json({
-        message: "Subject cannot be empty",
+    if (!subject.trim()) {
+      return res.status(400).json({ message: "Subject cannot be empty" });
+    }
+
+    if (!VALID_PRIORITIES.includes(priority)) {
+      return res.status(400).json({ message: "Invalid priority" });
+    }
+
+    const existing = await Ticket.findOne({
+      subject: subject.trim(),
+      userId,
+    });
+
+    if (existing) {
+      return res.status(409).json({
+        message: "Ticket with this subject already exists",
       });
     }
 
@@ -28,93 +45,107 @@ export const createTicket = async (req, res) => {
 
     res.status(201).json({
       message: "Ticket created successfully",
-    //   ticket,
+      ticketId: ticket._id,
     });
   } catch (error) {
     console.error("Create ticket error:", error);
-    res.status(500).json({
-      message: error.message || "Failed to create ticket",
-    });
+    res.status(500).json({ message: "Failed to create ticket" });
   }
 };
 
-// Get all tickets for a user
+// Get all tickets
 export const getUserTickets = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const tickets = await Ticket.find({ userId: req.user.id })
+      .sort({ createdAt: -1 });
 
-    const tickets = await Ticket.find({ userId }).sort({ createdAt: -1 });
-
-    res.status(200).json({
-      message: "Tickets retrieved successfully",
-      tickets,
-    });
+    res.status(200).json({ tickets });
   } catch (error) {
     console.error("Get tickets error:", error);
-    res.status(500).json({
-      message: error.message || "Failed to fetch tickets",
-    });
+    res.status(500).json({ message: "Failed to fetch tickets" });
   }
 };
 
-// Get a single ticket
+
+// Get ticket by id
 export const getTicketById = async (req, res) => {
   try {
     const { id } = req.params;
-    const userId = req.user.id;
 
-    const ticket = await Ticket.findOne({ _id: id, userId });
-
-    if (!ticket) {
-      return res.status(404).json({
-        message: "Ticket not found",
-      });
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Invalid ticket ID" });
     }
 
-    res.status(200).json({
-      message: "Ticket retrieved successfully",
-      ticket,
+    const ticket = await Ticket.findOne({
+      _id: id,
+      userId: req.user.id,
     });
+
+    if (!ticket) {
+      return res.status(404).json({ message: "Ticket not found" });
+    }
+
+    res.status(200).json({ ticket });
   } catch (error) {
     console.error("Get ticket error:", error);
-    res.status(500).json({
-      message: error.message || "Failed to fetch ticket",
-    });
+    res.status(500).json({ message: "Failed to fetch ticket" });
   }
 };
 
-// Update ticket
+// Update ticket 
 export const updateTicket = async (req, res) => {
   try {
     const { id } = req.params;
     const { subject, description, category, priority, status } = req.body;
-    const userId = req.user.id;
 
-    const ticket = await Ticket.findOne({ _id: id, userId });
-
-    if (!ticket) {
-      return res.status(404).json({
-        message: "Ticket not found",
-      });
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Invalid ticket ID" });
     }
 
-    if (subject !== undefined) ticket.subject = subject.trim();
-    if (description !== undefined) ticket.description = description.trim();
+    const ticket = await Ticket.findOne({
+      _id: id,
+      userId: req.user.id,
+    });
+
+    if (!ticket) {
+      return res.status(404).json({ message: "Ticket not found" });
+    }
+
+    if (subject !== undefined) {
+      if (!subject.trim()) {
+        return res.status(400).json({ message: "Subject cannot be empty" });
+      }
+      ticket.subject = subject.trim();
+    }
+
+    if (description !== undefined) {
+      ticket.description = description.trim();
+    }
+
+    if (priority !== undefined) {
+      if (!VALID_PRIORITIES.includes(priority)) {
+        return res.status(400).json({ message: "Invalid priority" });
+      }
+      ticket.priority = priority;
+    }
+
+    if (status !== undefined) {
+      if (!VALID_STATUSES.includes(status)) {
+        return res.status(400).json({ message: "Invalid status" });
+      }
+      ticket.status = status;
+    }
+
     if (category !== undefined) ticket.category = category;
-    if (priority !== undefined) ticket.priority = priority;
-    if (status !== undefined) ticket.status = status;
 
     await ticket.save();
 
     res.status(200).json({
       message: "Ticket updated successfully",
-      ticket,
     });
   } catch (error) {
     console.error("Update ticket error:", error);
-    res.status(500).json({
-      message: error.message || "Failed to update ticket",
-    });
+    res.status(500).json({ message: "Failed to update ticket" });
   }
 };
 
@@ -122,49 +153,57 @@ export const updateTicket = async (req, res) => {
 export const deleteTicket = async (req, res) => {
   try {
     const { id } = req.params;
-    const userId = req.user.id;
 
-    const ticket = await Ticket.findOneAndDelete({ _id: id, userId });
-
-    if (!ticket) {
-      return res.status(404).json({
-        message: "Ticket not found",
-      });
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Invalid ticket ID" });
     }
 
-    res.status(200).json({
-      message: "Ticket deleted successfully",
+    const ticket = await Ticket.findOneAndDelete({
+      _id: id,
+      userId: req.user.id,
     });
+
+    if (!ticket) {
+      return res.status(404).json({ message: "Ticket not found" });
+    }
+
+    res.status(200).json({ message: "Ticket deleted successfully" });
   } catch (error) {
     console.error("Delete ticket error:", error);
-    res.status(500).json({
-      message: error.message || "Failed to delete ticket",
-    });
+    res.status(500).json({ message: "Failed to delete ticket" });
   }
 };
 
-// Get ticket statistics
+// Get stats
 export const getTicketStats = async (req, res) => {
   try {
     const userId = req.user.id;
 
-    const open = await Ticket.countDocuments({ userId, status: "Open" });
-    const inProgress = await Ticket.countDocuments({ userId, status: "In Progress" });
-    const resolved = await Ticket.countDocuments({ userId, status: "Resolved" });
-
-    res.status(200).json({
-      message: "Statistics retrieved successfully",
-      stats: {
-        open,
-        inProgress,
-        resolved,
-        total: open + inProgress + resolved,
+    const stats = await Ticket.aggregate([
+      { $match: { userId: new mongoose.Types.ObjectId(userId) } },
+      {
+        $group: {
+          _id: "$status",
+          count: { $sum: 1 },
+        },
       },
+    ]);
+
+    const formatted = {
+      Open: 0,
+      "In Progress": 0,
+      Resolved: 0,
+      total: 0,
+    };
+
+    stats.forEach((s) => {
+      formatted[s._id] = s.count;
+      formatted.total += s.count;
     });
+
+    res.status(200).json({ stats: formatted });
   } catch (error) {
     console.error("Get stats error:", error);
-    res.status(500).json({
-      message: error.message || "Failed to fetch statistics",
-    });
+    res.status(500).json({ message: "Failed to fetch statistics" });
   }
 };
