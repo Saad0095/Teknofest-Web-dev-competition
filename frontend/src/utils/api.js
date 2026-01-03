@@ -6,6 +6,8 @@ const api = axios.create({
     "Content-Type": "application/json",
   },
 });
+
+// Request interceptor
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
@@ -17,14 +19,29 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+// Response interceptor
 api.interceptors.response.use(
-  (response) => {
-    return response.data;
-  },
+  (response) => response.data,
   (error) => {
     console.error("API error:", error.response || error.message);
     return Promise.reject(error);
   }
 );
+
+// Auth APIs
+export const authAPI = {
+  register: (data) => api.post("/auth/register", data),
+  login: (data) => api.post("/auth/login", data),
+};
+
+// Ticket APIs
+export const ticketAPI = {
+  create: (data) => api.post("/tickets", data),
+  getAll: () => api.get("/tickets"),
+  getById: (id) => api.get(`/tickets/${id}`),
+  update: (id, data) => api.put(`/tickets/${id}`, data),
+  delete: (id) => api.delete(`/tickets/${id}`),
+  getStats: () => api.get("/tickets/stats"),
+};
 
 export default api;
