@@ -27,7 +27,7 @@ const ticketSchema = new Schema(
     },
     status: {
       type: String,
-      enum: ["Open", "In Progress", "Resolved"],
+      enum: ["Open", "inProgress", "Resolved"],
       default: "Open",
     },
     userId: {

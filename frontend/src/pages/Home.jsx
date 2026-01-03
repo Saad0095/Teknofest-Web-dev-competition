@@ -18,7 +18,7 @@ export default function Dashboard() {
   const { user, logout, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [tickets, setTickets] = useState([]);
-  const [stats, setStats] = useState({ open: 0, inProgress: 0, resolved: 0, total: 0 });
+  const [stats, setStats] = useState({ Open: 0, inProgress: 0, Resolved: 0, total: 0 });
   const [showForm, setShowForm] = useState(false);
   const [editingTicket, setEditingTicket] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -164,7 +164,7 @@ export default function Dashboard() {
     switch (status) {
       case "Open":
         return <AlertCircle className="w-4 h-4" />;
-      case "In Progress":
+      case "inProgress":
         return <Clock className="w-4 h-4" />;
       case "Resolved":
         return <CheckCircle className="w-4 h-4" />;
@@ -177,7 +177,7 @@ export default function Dashboard() {
     switch (status) {
       case "Open":
         return "bg-blue-100 text-blue-800";
-      case "In Progress":
+      case "inProgress":
         return "bg-orange-100 text-orange-800";
       case "Resolved":
         return "bg-green-100 text-green-800";
@@ -238,7 +238,7 @@ export default function Dashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-600 text-sm">Open</p>
-                <p className="text-3xl font-bold text-gray-900">{stats.open}</p>
+                <p className="text-3xl font-bold text-gray-900">{stats.Open}</p>
               </div>
               <AlertCircle className="w-8 h-8 text-red-500 opacity-30" />
             </div>
@@ -247,7 +247,7 @@ export default function Dashboard() {
           <div className="bg-white rounded-lg shadow p-6 border-l-4 border-orange-500">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-600 text-sm">In Progress</p>
+                <p className="text-gray-600 text-sm">inProgress</p>
                 <p className="text-3xl font-bold text-gray-900">{stats.inProgress}</p>
               </div>
               <Clock className="w-8 h-8 text-orange-500 opacity-30" />
@@ -258,7 +258,7 @@ export default function Dashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-600 text-sm">Resolved</p>
-                <p className="text-3xl font-bold text-gray-900">{stats.resolved}</p>
+                <p className="text-3xl font-bold text-gray-900">{stats.Resolved}</p>
               </div>
               <CheckCircle className="w-8 h-8 text-green-500 opacity-30" />
             </div>
@@ -300,14 +300,14 @@ export default function Dashboard() {
               Open
             </button>
             <button
-              onClick={() => setFilter("In Progress")}
+              onClick={() => setFilter("inProgress")}
               className={`px-4 py-2 rounded-lg font-medium transition ${
-                filter === "In Progress"
+                filter === "inProgress"
                   ? "bg-blue-600 text-white"
                   : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
               }`}
             >
-              In Progress
+              inProgress
             </button>
             <button
               onClick={() => setFilter("Resolved")}
@@ -382,7 +382,7 @@ export default function Dashboard() {
                           className={`px-3 py-1 rounded-lg text-sm font-medium border-0 cursor-pointer ${getStatusColor(ticket.status)}`}
                         >
                           <option value="Open">Open</option>
-                          <option value="In Progress">In Progress</option>
+                          <option value="inProgress">inProgress</option>
                           <option value="Resolved">Resolved</option>
                         </select>
                       </td>

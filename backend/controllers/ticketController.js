@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import Ticket from "../models/Ticket.js";
 
-const VALID_STATUSES = ["Open", "In Progress", "Resolved"];
+const VALID_STATUSES = ["Open", "inProgress", "Resolved"];
 const VALID_PRIORITIES = ["Low", "Medium", "High"];
 
 // Create new ticket
@@ -191,7 +191,7 @@ export const getTicketStats = async (req, res) => {
 
     const formatted = {
       Open: 0,
-      "In Progress": 0,
+      "inProgress": 0,
       Resolved: 0,
       total: 0,
     };
