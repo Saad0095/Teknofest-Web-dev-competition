@@ -83,7 +83,6 @@ A full-stack web application for managing customer support tickets with user aut
 │   │   ├── main.jsx               # Entry point
 │   │   ├── App.css
 │   │   └── index.css
-│   ├── .env.example
 │   ├── package.json
 │   └── vite.config.js
 ```
